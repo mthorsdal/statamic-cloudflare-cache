@@ -1,0 +1,44 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ] # Assuming 'main' is your default branch
+  pull_request:
+    branches: [ main ] # Assuming 'main' is your default branch
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # Allow other jobs to continue even if one fails
+      matrix:
+        php-versions: ['8.1', '8.2', '8.3'] # PHP versions to test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-versions }}
+        extensions: mbstring, xml, ctype, json, fileinfo # Common extensions
+        coverage: none # No code coverage needed for basic tests
+        tools: composer:v2 # Specify Composer version if needed
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: vendor # The path to cache
+        key: ${{ runner.os }}-php-${{ matrix.php-versions }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-versions }}-composer-
+
+    - name: Install Dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Run Tests
+      run: composer test
