@@ -35,11 +35,13 @@ class PurgeCloudflareCache
 
         $urls = $this->getUrlsToPurge($event);
 
-        Log::debug('Cloudflare Cache: Event triggered', [
-            'event' => get_class($event),
-            'urls' => $urls,
-            'queue_enabled' => config('cloudflare-cache.queue_purge'),
-        ]);
+        if (config('cloudflare-cache.debug')) {
+            Log::debug('Cloudflare Cache: Event triggered', [
+                'event' => get_class($event),
+                'urls' => $urls,
+                'queue_enabled' => config('cloudflare-cache.queue_purge'),
+            ]);
+        }
 
         if (config('cloudflare-cache.queue_purge')) {
             $this->dispatchJob($urls);

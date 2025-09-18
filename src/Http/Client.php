@@ -169,11 +169,13 @@ class Client
                 ->post($endpoint, $data);
                 
             if ($response->successful()) {
-                Log::info('Cloudflare Cache: Successfully purged cache', [
-                    'action' => $action,
-                    'zone_id' => $zoneId,
-                    'success' => $response->json('success'),
-                ]);
+                if (config('cloudflare-cache.debug')) {
+                    Log::info('Cloudflare Cache: Successfully purged cache', [
+                        'action' => $action,
+                        'zone_id' => $zoneId,
+                        'success' => $response->json('success'),
+                    ]);
+                }
                 return true;
             }
             
